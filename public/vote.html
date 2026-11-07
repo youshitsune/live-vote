@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-        <title>Live Vote</title>
         <link href="/css/vote.css" rel="stylesheet">
+        <title>Live Vote</title>
     </head>
     <body>
         <main>
@@ -18,6 +18,11 @@
                 <div class="opts" id="opts"></div>
                 <div class="meta" id="meta"></div>
                 <div id="badge"></div>
+            </div>
+            <div class="card" id="error" style="display:none">
+                <div class="err">
+                    <h2>Invalid token</h2>
+                </div>
             </div>
         </main>
         <script src="/socket.io/socket.io.js"></script>

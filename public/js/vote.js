@@ -25,6 +25,10 @@ function escapeHtml(s){
     ); 
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token') || localStorage.getItem('token');
+localStorage.setItem('token', token);
+
 const sid = localStorage.getItem('lv_voter') || (crypto.randomUUID?crypto.randomUUID():'v'+Math.random().toString(36).slice(2));
 localStorage.setItem('lv_voter',sid);
 
@@ -34,13 +38,13 @@ let myChoice = null;
 let myVoted = false;
 let currentIdx = null;
 
-socket.on('connect', () => socket.emit('identify', { voterId: sid }));
+socket.on('connect', () => socket.emit('identify', { voterId: sid, token: token }));
 
 socket.on('state', (s) => {
-    document.getElementById('title').textContent = s.title || 'Live Vote';
     if (s.questionIndex < 0 || !s.question) {
         document.getElementById('lobby').style.display='block';
         document.getElementById('qcard').style.display='none';
+        document.getElementById('error').style.display='none';
         currentIdx = s.questionIndex;
         myVoted = false; myChoice = null;
         return;
@@ -51,6 +55,7 @@ socket.on('state', (s) => {
     }
     document.getElementById('lobby').style.display='none';
     document.getElementById('qcard').style.display='block';
+    document.getElementById('error').style.display = 'none';
     document.getElementById('qtext').textContent = s.question;
     renderOptions(s);
     const badge = document.getElementById('badge');
@@ -70,4 +75,11 @@ socket.on('you', (y) => {
 });
 
 socket.on('reset', () => { myVoted=false; myChoice=null; });
+
+socket.on('login:err', () => {
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('qcard').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    socket.disconnect();   
+});
 

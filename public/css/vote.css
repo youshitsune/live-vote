@@ -121,6 +121,9 @@ h2.q {
 }
 
 .err {
-    color: #ff6b6b;
+    background-color: #ff6b6b;
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
 }
 
