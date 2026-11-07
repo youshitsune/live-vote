@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link href="/css/dashboard.css" rel="stylesheet">
+        <title>Live Vote · Dashboard</title>
+    </head>
+    <body>
+        <div id="loginwrap">
+            <div class="card login">
+                <h3>Dashboard login</h3>
+                <div class="field"><div class="label">Password</div><input id="pw" type="password" placeholder="admin password"></div>
+                <button class="primary" id="loginBtn" style="width:100%">Enter</button>
+                <p class="hint">Default password: admin123 (set ADMIN_PASS env to change)</p>
+                <div id="lerr" class="err" style="margin-top:8px;display:none">Wrong password</div>
+            </div>
+        </div>
+
+        <div id="app" style="display:none">
+            <div class="container">
+                <div>
+                    <div class="card" style="margin-bottom:18px">
+                        <h3>Now showing</h3>
+                        <div class="now" id="nowq">—</div>
+                        <div class="kv"><span>Question index</span><b id="qidx">-</b></div>
+                        <div class="kv"><span>Total votes</span><b id="qtotal">0</b></div>
+                        <div class="opts" id="results"></div>
+                        <div class="row" style="margin-top:14px">
+                            <button id="prevBtn">◀ Prev</button>
+                            <button class="primary" id="nextBtn">Next ▶</button>
+                            <button id="resetBtn" class="danger">Reset votes</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Add question</h3>
+                        <div class="field"><div class="label">Question</div><input id="newq" placeholder="e.g. What's your favourite?"></div>
+                        <div class="field"><div class="label">Options (one per line)</div><textarea id="newopts" rows="4" placeholder="Option A&#10;Option B&#10;Option C"></textarea></div>
+                        <button class="primary" id="addBtn">Add question</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card" style="margin-bottom:18px">
+                        <h3>Questions</h3>
+                        <div id="qlist"></div>
+                        <p class="hint">Click a question to jump to it. Votes reset on switch.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Settings</h3>
+                        <div class="field"><div class="label">Event title</div><input id="titleinp"></div>
+                        <button id="titleBtn">Set title</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toast" id="toast"></div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/dashboard.js"></script>
+    </body>
+</html>

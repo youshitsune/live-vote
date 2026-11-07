@@ -1,0 +1,126 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    background: #0b0d12;
+    color: #f4f6fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    padding: 24px 18px;
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.card {
+    background: #141821;
+    border: 1px solid #232838;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+h2.q {
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 0 0 18px;
+}
+
+.lobby {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9aa3b2;
+}
+
+.lobby h2 {
+    color: #f4f6fa;
+    margin: 0 0 8px;
+}
+
+.opts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.opt {
+    position: relative;
+    border: 1px solid #2a3042;
+    background: #1a1f2e;
+    color: #f4f6fa;
+    border-radius: 12px;
+    padding: 16px 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.15s;
+    border: 0;
+}
+
+.opt:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.opt:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 12px;
+    z-index: 0;
+    transition: width 0.4s ease;
+    background: rgba(88, 140, 255, 0.18);
+}
+
+.opt span {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.opt .pct {
+    font-weight: 700;
+    color: #7fa6ff;
+}
+
+.opt.chosen {
+    border: 1px solid #588cff;
+    background: #1d2540;
+}
+
+.meta {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #9aa3b2;
+    text-align: center;
+}
+
+.voted-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #1e3a2a;
+    color: #5ee08a;
+    font-size: 13px;
+}
+
+.err {
+    color: #ff6b6b;
+}
+

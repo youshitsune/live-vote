@@ -155,5 +155,6 @@ io.on('connection', (socket) => {
 
 httpServer.listen(PORT, () => {
   console.log(`Live Vote running on http://localhost:${PORT}`);
-  console.log(`Host dashboard: http://localhost:${PORT}/host.html  (password: ${ADMIN_PASS})`);
+  console.log(`Host dashboard: http://localhost:${PORT}/dashboard.html  (password: ${ADMIN_PASS})`);
 });
+
