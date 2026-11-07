@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Vote · Host</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;background:#0b0d12;color:#f4f6fa}
+  header{padding:16px 22px;background:#141821;border-bottom:1px solid #232838;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:18px;font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71;display:inline-block;margin-right:8px}
+  .container{max-width:1100px;margin:0 auto;padding:22px;display:grid;grid-template-columns:1fr 360px;gap:20px}
+  @media(max-width:880px){.container{grid-template-columns:1fr}}
+  .card{background:#141821;border:1px solid #232838;border-radius:16px;padding:18px}
+  h3{margin:0 0 12px;font-size:15px;color:#cdd5e5;font-weight:600}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  button{background:#1e2433;color:#f4f6fa;border:1px solid #2a3042;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
+  button.primary{background:#588cff;border-color:#588cff;color:#fff}
+  button.danger{background:#3a1f24;border-color:#6b2a33;color:#ff8a8a}
+  button:disabled{opacity:.4;cursor:default}
+  input,textarea{background:#0e1117;border:1px solid #2a3042;border-radius:10px;padding:9px 12px;color:#f4f6fa;font-size:14px;width:100%}
+  .field{margin-bottom:10px}
+  .label{font-size:12px;color:#9aa3b2;margin-bottom:4px}
+  .status{font-size:13px;padding:8px 12px;border-radius:10px;background:#1a1f2e;color:#9aa3b2}
+  .now{font-size:24px;font-weight:700;margin:6px 0 4px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .optbar{position:relative;background:#1a1f2e;border-radius:10px;padding:10px 12px;overflow:hidden}
+  .optbar .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(88,140,255,.22);transition:width .4s}
+  .optbar .txt{position:relative;display:flex;justify-content:space-between;gap:10px}
+  .qitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #232838;border-radius:10px;margin-bottom:6px;background:#0e1117;cursor:pointer}
+  .qitem.active{border-color:#588cff;background:#1d2540}
+  .qitem .idx{opacity:.5;font-size:12px;width:20px}
+  .qitem .t{flex:1;font-size:14px}
+  .login{max-width:360px;margin:80px auto;padding:24px}
+  .kv{display:flex;justify-content:space-between;font-size:13px;color:#9aa3b2;margin-top:6px}
+  .kv b{color:#f4f6fa}
+  .toast{position:fixed;bottom:16px;right:16px;background:#1e3a2a;border:1px solid #2ecc71;color:#5ee08a;padding:10px 14px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .hint{font-size:12px;color:#5a6272}
+</style>
+</head>
+<body>
+<div id="loginwrap">
+  <div class="card login">
+    <h3>Host login</h3>
+    <div class="field"><div class="label">Password</div><input id="pw" type="password" placeholder="admin password"></div>
+    <button class="primary" id="loginBtn" style="width:100%">Enter</button>
+    <p class="hint">Default password: admin123 (set ADMIN_PASS env to change)</p>
+    <div id="lerr" class="err" style="margin-top:8px;display:none">Wrong password</div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<header>
+  <div><span class="dot"></span><h1 style="display:inline">Live Vote · Host</h1></div>
+  <div class="row">
+    <span class="status" id="conn">connected</span>
+    <a href="/vote.html" target="_blank"><button>Open voter page</button></a>
+  </div>
+</header>
+<div class="container">
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h3>Now showing</h3>
+      <div class="now" id="nowq">—</div>
+      <div class="kv"><span>Question index</span><b id="qidx">-</b></div>
+      <div class="kv"><span>Total votes</span><b id="qtotal">0</b></div>
+      <div class="opts" id="results"></div>
+      <div class="row" style="margin-top:14px">
+        <button id="prevBtn">◀ Prev</button>
+        <button class="primary" id="nextBtn">Next ▶</button>
+        <button id="resetBtn" class="danger">Reset votes</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Add question</h3>
+      <div class="field"><div class="label">Question</div><input id="newq" placeholder="e.g. What's your favourite?"></div>
+      <div class="field"><div class="label">Options (one per line)</div><textarea id="newopts" rows="4" placeholder="Option A&#10;Option B&#10;Option C"></textarea></div>
+      <button class="primary" id="addBtn">Add question</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:18px">
+      <h3>Questions</h3>
+      <div id="qlist"></div>
+      <p class="hint">Click a question to jump to it. Votes reset on switch.</p>
+    </div>
+    <div class="card">
+      <h3>Settings</h3>
+      <div class="field"><div class="label">Event title</div><input id="titleinp"></div>
+      <button id="titleBtn">Set title</button>
+    </div>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let authed = false;
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+
+document.getElementById('loginBtn').onclick = () => {
+  const pw = document.getElementById('pw').value;
+  socket.emit('admin:auth', {password:pw}, (r) => {
+    if (r && r.ok) {
+      authed=true;
+      document.getElementById('loginwrap').style.display='none';
+      document.getElementById('app').style.display='block';
+      toast('Logged in');
+    } else {
+      document.getElementById('lerr').style.display='block';
+    }
+  });
+};
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click();});
+
+socket.on('connect',()=>{document.getElementById('conn').textContent='connected';});
+socket.on('disconnect',()=>{document.getElementById('conn').textContent='disconnected';});
+
+let lastState = null;
+socket.on('state', (s) => {
+  lastState = s;
+  document.getElementById('nowq').textContent = s.question || '— (lobby) —';
+  document.getElementById('qidx').textContent = s.questionIndex;
+  document.getElementById('qtotal').textContent = s.total;
+  const res = document.getElementById('results');
+  res.innerHTML = '';
+  if (s.options && s.options.length) {
+    s.options.forEach((opt,i)=>{
+      const d=document.createElement('div');
+      d.className='optbar';
+      const pct=s.percentages[i]||0;
+      const cnt=s.counts[i]||0;
+      d.innerHTML='<div class="fill" style="width:'+pct+'%"></div><div class="txt"><span>'+escapeHtml(opt)+'</span><span>'+pct+'% · '+cnt+'</span></div>';
+      res.appendChild(d);
+    });
+  }
+  // question list
+  const ql=document.getElementById('qlist');
+  // question list from server state
+  window.__qs = (s.questions && s.questions.length) ? s.questions : (window.__qs||[]);
+  renderQList();
+  if (document.getElementById('titleinp').value==='' && s.title) document.getElementById('titleinp').value=s.title;
+});
+
+// We need full question list for panel. Let's fetch via a lightweight hack: store questions locally on add, and on load assume initial 3.
+// Better: ask server for list. Add endpoint? Let's just track via events: when state changes we only know count. 
+// Implement a client-side mirror updated by admin actions + initial default.
+if (!window.__qs) window.__qs = [
+  'What is your favourite color?',
+  'Coffee or Tea?',
+  'Remote or in-office?'
+];
+// But options etc. We only need text for list. Track count from state.
+function renderQList(){
+  const ql=document.getElementById('qlist');
+  const s=lastState; if(!s) return;
+  // We only know count, not texts. Rebuild using cached list trimmed to count
+  let list = window.__qs.slice(0,s.totalQuestions);
+  // pad
+  while (list.length < s.totalQuestions) { list.push('Question '+(list.length+1)); }
+  ql.innerHTML='';
+  list.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='qitem'+(i===s.questionIndex?' active':'');
+    d.innerHTML='<span class="idx">'+(i+1)+'</span><span class="t">'+escapeHtml(t)+'</span>';
+    d.onclick=()=> socket.emit('admin:goto',{index:i});
+    // remove button
+    const rb=document.createElement('button');
+    rb.textContent='×'; rb.style.padding='2px 8px'; rb.style.fontSize='12px';
+    rb.onclick=(e)=>{e.stopPropagation(); if(confirm('Remove question?')) socket.emit('admin:removeQuestion',{index:i});};
+    d.appendChild(rb);
+    ql.appendChild(d);
+  });
+}
+
+document.getElementById('nextBtn').onclick = ()=> socket.emit('admin:next');
+document.getElementById('prevBtn').onclick = ()=> socket.emit('admin:prev');
+document.getElementById('resetBtn').onclick = ()=> { if(confirm('Reset all votes for current question?')) socket.emit('admin:resetVotes'); };
+
+document.getElementById('addBtn').onclick = () => {
+  const text = document.getElementById('newq').value.trim();
+  const opts = document.getElementById('newopts').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if (!text || opts.length<2) { toast('Need question + >=2 options'); return;}
+  socket.emit('admin:addQuestion',{text,options:opts});
+  window.__qs.push(text);
+  document.getElementById('newq').value='';
+  document.getElementById('newopts').value='';
+  toast('Added');
+};
+
+document.getElementById('titleBtn').onclick = () => {
+  socket.emit('admin:setTitle',{title:document.getElementById('titleinp').value});
+  toast('Title set');
+};
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
