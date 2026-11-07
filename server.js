@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 const PORT = process.env.PORT || 3000;
-const TOKEN = process.env.TOKEN || 'test';
+let TOKEN = process.env.TOKEN || 'test';
 
 const app = express();
 const httpServer = createServer(app);
@@ -14,7 +14,6 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const state = {
-    title: 'Live Vote',
     questions: [
         { text: 'What is your favourite color?', options: ['Red', 'Blue', 'Green', 'Yellow'] },
         { text: 'Coffee or Tea?', options: ['Coffee ☕', 'Tea 🍵', 'Both', 'Neither'] },
@@ -37,7 +36,6 @@ function tally() {
 function publicState() {
     const q = state.currentIndex >= 0 ? state.questions[state.currentIndex] : null;
     return {
-        title: state.title,
         questionIndex: state.currentIndex,
         totalQuestions: state.questions.length,
         questions: state.questions.map(qq => qq.text),
@@ -75,6 +73,7 @@ io.on('connection', (socket) => {
         if (password === ADMIN_PASS) {
             admins.add(socket.id);
             socket.emit('admin:ok');
+            socket.emit('admin:tokenUpdate', {token_new: TOKEN});
             if (typeof cb === 'function') cb({ ok: true });
         } else {
             if (typeof cb === 'function') cb({ ok: false });
@@ -99,10 +98,10 @@ io.on('connection', (socket) => {
         broadcastState();
     });
 
-    socket.on('admin:setTitle', ({ title }) => {
+    socket.on('admin:setToken', ({ token }) => {
         if (!isAdmin()) return;
-        state.title = String(title || 'Live Vote').trim() || 'Live Vote';
-        broadcastState();
+        TOKEN = token;
+        socket.emit('admin:tokenUpdate', {token_new: token});
     });
 
     socket.on('admin:next', () => {

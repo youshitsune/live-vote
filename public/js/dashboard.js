@@ -1,5 +1,6 @@
 const socket = io();
 let authed = false;
+let token = null;
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
 
@@ -18,8 +19,11 @@ document.getElementById('loginBtn').onclick = () => {
 };
 document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click();});
 
-socket.on('connect',()=>{document.getElementById('conn').textContent='connected';});
-socket.on('disconnect',()=>{document.getElementById('conn').textContent='disconnected';});
+socket.on('admin:tokenUpdate', ({token_new}) => {
+    token = token_new;
+    document.getElementById('token').innerHTML = `Current token: ${token}`;
+    console.log(token);
+});
 
 let lastState = null;
 socket.on('state', (s) => {
@@ -44,7 +48,6 @@ socket.on('state', (s) => {
     // question list from server state
     window.__qs = (s.questions && s.questions.length) ? s.questions : (window.__qs||[]);
     renderQList();
-    if (document.getElementById('titleinp').value==='' && s.title) document.getElementById('titleinp').value=s.title;
 });
 
 // We need full question list for panel. Let's fetch via a lightweight hack: store questions locally on add, and on load assume initial 3.
@@ -93,9 +96,9 @@ document.getElementById('addBtn').onclick = () => {
     toast('Added');
 };
 
-document.getElementById('titleBtn').onclick = () => {
-    socket.emit('admin:setTitle',{title:document.getElementById('titleinp').value});
-    toast('Title set');
+document.getElementById('tokenBtn').onclick = () => {
+    socket.emit('admin:setToken',{token:document.getElementById('tokeninp').value});
+    toast('Token set');
 };
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
