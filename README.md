@@ -8,12 +8,11 @@ Real-time voting platform. Host controls questions; all connected phones update 
 
 ```sh
 cd live-vote
-ADMIN_PASS=yourpassword PORT=3000 node server.js
+ADMIN_PASS=yourpassword PORT=3000 TOKEN=yourtoken node server.js
 ```
 
-- Voter page: http://localhost:3000/vote.html  (share this URL / QR to phones)
+- Voter page: http://localhost:3000/vote.html?token=yourtoken (yourtoken: TOKEN, default `test`)
 - Host dashboard: http://localhost:3000/dashboard.html  (password: ADMIN_PASS, default `admin123`)
-- Home: http://localhost:3000/
 
 ## How it works
 
