@@ -55,9 +55,9 @@ function broadcastState() {
 io.on('connection', (socket) => {
     socket.emit('state', publicState());
 
-    socket.on('identify', ({ voterId, token }) => {
+    socket.on('identify', ({ voterId, token }, cb) => {
         if (token !== TOKEN) {
-            socket.emit('login:err', {});
+            if (typeof cb === 'function') cb({ok: false});
             socket.disconnect();
             return;
         }
@@ -66,13 +66,13 @@ io.on('connection', (socket) => {
             socketToVoter.set(socket.id, voterId);
             const voted = state.votes.has(voterId);
             socket.emit('you', { voterId, voted, choice: voted ? state.votes.get(voterId) : null });
+            if (typeof cb === 'function') cb({ok: true});
         }
     });
 
     socket.on('admin:auth', ({ password }, cb) => {
         if (password === ADMIN_PASS) {
             admins.add(socket.id);
-            socket.emit('admin:ok');
             socket.emit('admin:tokenUpdate', {token_new: TOKEN});
             if (typeof cb === 'function') cb({ ok: true });
         } else {
@@ -160,8 +160,7 @@ io.on('connection', (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-    console.log(`Live Vote running on http://localhost:${PORT}`);
-    console.log(`Voting Token: ${TOKEN}`)
+    console.log(`Live Vote running on http://localhost:${PORT}/vote.html?token=${TOKEN}`);
     console.log(`Host dashboard: http://localhost:${PORT}/dashboard.html  (password: ${ADMIN_PASS})`);
 });
 

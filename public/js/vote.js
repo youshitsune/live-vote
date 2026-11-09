@@ -38,7 +38,14 @@ let myChoice = null;
 let myVoted = false;
 let currentIdx = null;
 
-socket.on('connect', () => socket.emit('identify', { voterId: sid, token: token }));
+socket.on('connect', () => socket.emit('identify', { voterId: sid, token: token }, (r) => {
+    if (r && !r.ok) {
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('qcard').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        socket.disconnect();   
+    }
+}));
 
 socket.on('state', (s) => {
     if (s.questionIndex < 0 || !s.question) {
@@ -75,11 +82,3 @@ socket.on('you', (y) => {
 });
 
 socket.on('reset', () => { myVoted=false; myChoice=null; });
-
-socket.on('login:err', () => {
-    document.getElementById('lobby').style.display = 'none';
-    document.getElementById('qcard').style.display = 'none';
-    document.getElementById('error').style.display = 'block';
-    socket.disconnect();   
-});
-

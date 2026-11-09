@@ -2,7 +2,12 @@ const socket = io();
 let authed = false;
 let token = null;
 
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+function toast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1600);
+}
 
 document.getElementById('loginBtn').onclick = () => {
     const pw = document.getElementById('pw').value;
@@ -43,43 +48,43 @@ socket.on('state', (s) => {
             res.appendChild(d);
         });
     }
-    // question list
-    const ql=document.getElementById('qlist');
-    // question list from server state
+
     window.__qs = (s.questions && s.questions.length) ? s.questions : (window.__qs||[]);
     renderQList();
 });
 
-// We need full question list for panel. Let's fetch via a lightweight hack: store questions locally on add, and on load assume initial 3.
-    // Better: ask server for list. Add endpoint? Let's just track via events: when state changes we only know count. 
-    // Implement a client-side mirror updated by admin actions + initial default.
-    if (!window.__qs) window.__qs = [
-        'What is your favourite color?',
-        'Coffee or Tea?',
-        'Remote or in-office?'
-    ];
-// But options etc. We only need text for list. Track count from state.
-    function renderQList(){
-        const ql=document.getElementById('qlist');
-        const s=lastState; if(!s) return;
-        // We only know count, not texts. Rebuild using cached list trimmed to count
-        let list = window.__qs.slice(0,s.totalQuestions);
-        // pad
-        while (list.length < s.totalQuestions) { list.push('Question '+(list.length+1)); }
-        ql.innerHTML='';
-        list.forEach((t,i)=>{
-            const d=document.createElement('div');
-            d.className='qitem'+(i===s.questionIndex?' active':'');
-            d.innerHTML='<span class="idx">'+(i+1)+'</span><span class="t">'+escapeHtml(t)+'</span>';
-            d.onclick=()=> socket.emit('admin:goto',{index:i});
-            // remove button
-            const rb=document.createElement('button');
-            rb.textContent='×'; rb.style.padding='2px 8px'; rb.style.fontSize='12px';
-            rb.onclick=(e)=>{e.stopPropagation(); if(confirm('Remove question?')) socket.emit('admin:removeQuestion',{index:i});};
-            d.appendChild(rb);
-            ql.appendChild(d);
-        });
-    }
+if (!window.__qs) window.__qs = [
+    'What is your favourite color?',
+    'Coffee or Tea?',
+    'Remote or in-office?'
+];
+
+function renderQList(){
+    const ql=document.getElementById('qlist');
+    const s=lastState; if(!s) return;
+
+    let list = window.__qs.slice(0,s.totalQuestions);
+
+    while (list.length < s.totalQuestions) { list.push('Question '+(list.length+1)); }
+    ql.innerHTML='';
+    list.forEach((t,i)=>{
+        const d=document.createElement('div');
+        d.className='qitem'+(i===s.questionIndex?' active':'');
+        d.innerHTML='<span class="idx">'+(i+1)+'</span><span class="t">'+escapeHtml(t)+'</span>';
+        d.onclick=()=> socket.emit('admin:goto',{index:i});
+
+        const rb=document.createElement('button');
+        rb.textContent='×'; rb.style.padding='2px 8px'; rb.style.fontSize='12px';
+        rb.onclick= (e) => {
+            e.stopPropagation();
+            if (confirm('Remove question?')) {
+                socket.emit('admin:removeQuestion',{index:i});
+            }
+        };
+        d.appendChild(rb);
+        ql.appendChild(d);
+    });
+}
 
 document.getElementById('nextBtn').onclick = ()=> socket.emit('admin:next');
 document.getElementById('prevBtn').onclick = ()=> socket.emit('admin:prev');
@@ -101,5 +106,7 @@ document.getElementById('tokenBtn').onclick = () => {
     toast('Token set');
 };
 
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s) { 
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); 
+}
 
