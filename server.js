@@ -1,6 +1,7 @@
 const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const fs = require("fs");
 
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 const PORT = process.env.PORT || 3000;
@@ -13,15 +14,23 @@ const io = new Server(httpServer, { cors: { origin: '*' }, pingTimeout: 20000, p
 app.use(express.json());
 app.use(express.static('public'));
 
-const state = {
-    questions: [
-        { text: 'What is your favourite color?', options: ['Red', 'Blue', 'Green', 'Yellow'] },
-        { text: 'Coffee or Tea?', options: ['Coffee ☕', 'Tea 🍵', 'Both', 'Neither'] },
-        { text: 'Remote or in-office?', options: ['Remote', 'In-office', 'Hybrid'] },
-    ],
+let state = {
+    questions: [],
     currentIndex: -1,
     votes: new Map(),
 };
+
+fs.readFile("questions.json", (err, data) => {
+    if (err) {
+        state.questions = [
+            { text: 'What is your favourite color?', options: ['Red', 'Blue', 'Green', 'Yellow'] },
+            { text: 'Coffee or Tea?', options: ['Coffee ☕', 'Tea 🍵', 'Both', 'Neither'] },
+            { text: 'Remote or in-office?', options: ['Remote', 'In-office', 'Hybrid'] },
+        ];
+    } else {
+        state.questions = JSON.parse(data).questions;
+    }
+});
 
 function tally() {
     const q = state.currentIndex >= 0 ? state.questions[state.currentIndex] : null;
