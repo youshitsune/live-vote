@@ -146,8 +146,8 @@ io.on('connection', (socket) => {
     socket.on('admin:resetVotes', () => {
         if (!isAdmin()) return;
         state.votes.clear();
-        broadcastState();
         io.emit('reset');
+        broadcastState();
     });
 
     socket.on('vote', ({ optionIndex }) => {
